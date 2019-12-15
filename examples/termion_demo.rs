@@ -13,7 +13,7 @@ use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::Terminal;
 
-use crate::demo::{ui, App};
+use crate::demo::{App, UI};
 use crate::util::event::{Config, Event, Events};
 
 #[derive(Debug, StructOpt)]
@@ -41,8 +41,12 @@ fn main() -> Result<(), failure::Error> {
     terminal.hide_cursor()?;
 
     let mut app = App::new("Termion demo");
+    let mut ui = UI::new();
     loop {
-        ui::draw(&mut terminal, &app)?;
+        terminal.draw(|mut f| {
+            ui.draw(&mut f, &app);
+        })?;
+
         match events.next()? {
             Event::Input(key) => match key {
                 Key::Char(c) => {

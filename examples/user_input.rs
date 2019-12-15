@@ -23,7 +23,7 @@ use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint, Direction, Layout};
 use tui::style::{Color, Style};
-use tui::widgets::{Block, Borders, List, Paragraph, Text, Widget};
+use tui::widgets::{Block, Borders, List, Paragraph, Text};
 use tui::Terminal;
 use unicode_width::UnicodeWidthStr;
 
@@ -68,18 +68,19 @@ fn main() -> Result<(), failure::Error> {
                 .margin(2)
                 .constraints([Constraint::Length(3), Constraint::Min(1)].as_ref())
                 .split(f.size());
-            Paragraph::new([Text::raw(&app.input)].iter())
+            let text = [Text::raw(&app.input)];
+            let paragraph = Paragraph::new(text.iter())
                 .style(Style::default().fg(Color::Yellow))
-                .block(Block::default().borders(Borders::ALL).title("Input"))
-                .render(&mut f, chunks[0]);
+                .block(Block::default().borders(Borders::ALL).title("Input"));
+            f.render_widget(paragraph, chunks[0]);
             let messages = app
                 .messages
                 .iter()
                 .enumerate()
                 .map(|(i, m)| Text::raw(format!("{}: {}", i, m)));
-            List::new(messages)
-                .block(Block::default().borders(Borders::ALL).title("Messages"))
-                .render(&mut f, chunks[1]);
+            let messages =
+                List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
+            f.render_widget(messages, chunks[1]);
         })?;
 
         // Put the cursor back inside the input box

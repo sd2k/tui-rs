@@ -9,7 +9,7 @@ use structopt::StructOpt;
 use tui::backend::RustboxBackend;
 use tui::Terminal;
 
-use crate::demo::{ui, App};
+use crate::demo::{App, UI};
 
 #[derive(Debug, StructOpt)]
 struct Cli {
@@ -28,11 +28,14 @@ fn main() -> Result<(), failure::Error> {
     terminal.hide_cursor()?;
 
     let mut app = App::new("Rustbox demo");
+    let mut ui = UI::new();
 
     let mut last_tick = Instant::now();
     let tick_rate = Duration::from_millis(cli.tick_rate);
     loop {
-        ui::draw(&mut terminal, &app)?;
+        terminal.draw(|mut f| {
+            ui.draw(&mut f, &app);
+        })?;
         match terminal.backend().rustbox().peek_event(tick_rate, false) {
             Ok(rustbox::Event::KeyEvent(key)) => match key {
                 Key::Char(c) => {

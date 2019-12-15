@@ -10,7 +10,7 @@ use structopt::StructOpt;
 use tui::backend::CursesBackend;
 use tui::Terminal;
 
-use crate::demo::{ui, App};
+use crate::demo::{App, UI};
 
 #[derive(Debug, StructOpt)]
 struct Cli {
@@ -34,11 +34,14 @@ fn main() -> Result<(), failure::Error> {
     terminal.hide_cursor()?;
 
     let mut app = App::new("Curses demo");
+    let mut ui = UI::new();
 
     let mut last_tick = Instant::now();
     let tick_rate = Duration::from_millis(cli.tick_rate);
     loop {
-        ui::draw(&mut terminal, &app)?;
+        terminal.draw(|mut f| {
+            ui.draw(&mut f, &app);
+        })?;
         match terminal.backend_mut().get_curses_mut().get_input() {
             Some(input) => {
                 match input {

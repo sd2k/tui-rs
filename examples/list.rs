@@ -10,7 +10,7 @@ use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint, Corner, Direction, Layout};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, List, SelectableList, Text, Widget};
+use tui::widgets::{Block, Borders, List, ListState, Text};
 use tui::Terminal;
 
 use crate::util::event::{Event, Events};
@@ -29,9 +29,9 @@ impl<'a> App<'a> {
     fn new() -> App<'a> {
         App {
             items: vec![
-                "Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Item8", "Item9",
-                "Item10", "Item11", "Item12", "Item13", "Item14", "Item15", "Item16", "Item17",
-                "Item18", "Item19", "Item20", "Item21", "Item22", "Item23", "Item24",
+                "Item0", "Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Item8",
+                "Item9", "Item10", "Item11", "Item12", "Item13", "Item14", "Item15", "Item16",
+                "Item17", "Item18", "Item19", "Item20", "Item21", "Item22", "Item23", "Item24",
             ],
             selected: None,
             events: vec![
@@ -75,6 +75,20 @@ impl<'a> App<'a> {
     }
 }
 
+struct WidgetStates {
+    items: ListState,
+    events: ListState,
+}
+
+impl WidgetStates {
+    fn new() -> WidgetStates {
+        WidgetStates {
+            items: ListState::default(),
+            events: ListState::default(),
+        }
+    }
+}
+
 fn main() -> Result<(), failure::Error> {
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
@@ -89,6 +103,8 @@ fn main() -> Result<(), failure::Error> {
     // App
     let mut app = App::new();
 
+    let mut ui = WidgetStates::new();
+
     loop {
         terminal.draw(|mut f| {
             let chunks = Layout::default()
@@ -97,31 +113,31 @@ fn main() -> Result<(), failure::Error> {
                 .split(f.size());
 
             let style = Style::default().fg(Color::Black).bg(Color::White);
-            SelectableList::default()
+
+            let items = app.items.iter().map(|i| Text::raw(*i));
+            let items_list = List::new(items)
                 .block(Block::default().borders(Borders::ALL).title("List"))
-                .items(&app.items)
                 .select(app.selected)
                 .style(style)
                 .highlight_style(style.fg(Color::LightGreen).modifier(Modifier::BOLD))
-                .highlight_symbol(">")
-                .render(&mut f, chunks[0]);
-            {
-                let events = app.events.iter().map(|&(evt, level)| {
-                    Text::styled(
-                        format!("{}: {}", level, evt),
-                        match level {
-                            "ERROR" => app.error_style,
-                            "CRITICAL" => app.critical_style,
-                            "WARNING" => app.warning_style,
-                            _ => app.info_style,
-                        },
-                    )
-                });
-                List::new(events)
-                    .block(Block::default().borders(Borders::ALL).title("List"))
-                    .start_corner(Corner::BottomLeft)
-                    .render(&mut f, chunks[1]);
-            }
+                .highlight_symbol(">");
+            f.render_stateful_widget(items_list, chunks[0], &mut ui.items);
+
+            let events = app.events.iter().map(|&(evt, level)| {
+                Text::styled(
+                    format!("{}: {}", level, evt),
+                    match level {
+                        "ERROR" => app.error_style,
+                        "CRITICAL" => app.critical_style,
+                        "WARNING" => app.warning_style,
+                        _ => app.info_style,
+                    },
+                )
+            });
+            let events_list = List::new(events)
+                .block(Block::default().borders(Borders::ALL).title("List"))
+                .start_corner(Corner::BottomLeft);
+            f.render_stateful_widget(events_list, chunks[1], &mut ui.events);
         })?;
 
         match events.next()? {

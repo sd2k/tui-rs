@@ -341,10 +341,10 @@ where
     LX: AsRef<str>,
     LY: AsRef<str>,
 {
-    fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(mut self, area: Rect, buf: &mut Buffer) {
         let chart_area = match self.block {
             Some(ref mut b) => {
-                b.draw(area, buf);
+                b.render(area, buf);
                 b.inner(area)
             }
             None => area,
@@ -356,7 +356,7 @@ where
             return;
         }
 
-        self.background(chart_area, buf, self.style.bg);
+        buf.set_background(chart_area, self.style.bg);
 
         if let Some((x, y)) = layout.title_x {
             let title = self.x_axis.title.unwrap();
@@ -458,7 +458,7 @@ where
                                 color: dataset.style.fg,
                             });
                         })
-                        .draw(graph_area, buf);
+                        .render(graph_area, buf);
                 }
             }
         }
@@ -466,7 +466,7 @@ where
         if let Some(legend_area) = layout.legend_area {
             Block::default()
                 .borders(Borders::ALL)
-                .draw(legend_area, buf);
+                .render(legend_area, buf);
             for (i, dataset) in self.datasets.iter().enumerate() {
                 buf.set_string(
                     legend_area.x + 1,

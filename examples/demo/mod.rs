@@ -1,3 +1,4 @@
 mod app;
-pub mod ui;
+mod ui;
 pub use app::App;
+pub use ui::UI;

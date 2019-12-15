@@ -15,7 +15,7 @@ use structopt::StructOpt;
 use tui::backend::CrosstermBackend;
 use tui::Terminal;
 
-use crate::demo::{ui, App};
+use crate::demo::{App, UI};
 use std::io::stdout;
 
 enum Event<I> {
@@ -72,11 +72,14 @@ fn main() -> Result<(), failure::Error> {
     });
 
     let mut app = App::new("Crossterm Demo");
+    let mut ui = UI::new();
 
     terminal.clear()?;
 
     loop {
-        ui::draw(&mut terminal, &app)?;
+        terminal.draw(|mut f| {
+            ui.draw(&mut f, &app);
+        })?;
         match rx.recv()? {
             Event::Input(event) => match event {
                 KeyEvent::Char(c) => app.on_key(c),

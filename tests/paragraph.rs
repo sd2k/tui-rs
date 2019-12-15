@@ -1,7 +1,7 @@
 use tui::backend::TestBackend;
 use tui::buffer::Buffer;
 use tui::layout::Alignment;
-use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
+use tui::widgets::{Block, Borders, Paragraph, Text};
 use tui::Terminal;
 
 const SAMPLE_STRING: &str =
@@ -20,11 +20,11 @@ fn paragraph_render_wrap() {
             .draw(|mut f| {
                 let size = f.size();
                 let text = [Text::raw(SAMPLE_STRING)];
-                Paragraph::new(text.iter())
+                let paragraph = Paragraph::new(text.iter())
                     .block(Block::default().borders(Borders::ALL))
                     .alignment(alignment)
-                    .wrap(true)
-                    .render(&mut f, size);
+                    .wrap(true);
+                f.render_widget(paragraph, size);
             })
             .unwrap();
         terminal.backend().buffer().clone()
@@ -87,10 +87,10 @@ fn paragraph_render_double_width() {
         .draw(|mut f| {
             let size = f.size();
             let text = [Text::raw(s)];
-            Paragraph::new(text.iter())
+            let paragraph = Paragraph::new(text.iter())
                 .block(Block::default().borders(Borders::ALL))
-                .wrap(true)
-                .render(&mut f, size);
+                .wrap(true);
+            f.render_widget(paragraph, size);
         })
         .unwrap();
 
@@ -119,10 +119,10 @@ fn paragraph_render_mixed_width() {
         .draw(|mut f| {
             let size = f.size();
             let text = [Text::raw(s)];
-            Paragraph::new(text.iter())
+            let paragraph = Paragraph::new(text.iter())
                 .block(Block::default().borders(Borders::ALL))
-                .wrap(true)
-                .render(&mut f, size);
+                .wrap(true);
+            f.render_widget(paragraph, size);
         })
         .unwrap();
 
