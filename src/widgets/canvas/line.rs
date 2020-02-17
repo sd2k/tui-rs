@@ -47,7 +47,7 @@ impl<'a> IntoIterator for &'a Line {
         let dy = self.y1.max(self.y2) - self.y1.min(self.y2);
         let dir_x = if self.x1 <= self.x2 { 1.0 } else { -1.0 };
         let dir_y = if self.y1 <= self.y2 { 1.0 } else { -1.0 };
-        let end = dx.max(dy);
+        let end = dx.max(dy).max(100.0);
         LineIterator {
             x: self.x1,
             y: self.y1,
